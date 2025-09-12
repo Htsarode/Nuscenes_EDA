@@ -10,7 +10,10 @@ from src.data_loader import (
     load_vehicle_class_data,
     load_object_behaviour_data,
     load_pedestrian_density_road_types,
-    load_pedestrian_cyclist_ratio
+    load_pedestrian_cyclist_ratio,
+    load_pedestrian_behaviour_data,
+    load_pedestrian_road_crossing,
+    load_pedestrian_visibility_status
 )
 
 from plots.Weather import plot_weather_distribution
@@ -25,6 +28,9 @@ from plots.VehicleClass import plot_vehicle_class
 from plots.ObjectBehaviour import plot_object_behaviour
 from plots.PedestrianDensityRoadTypes import plot_pedestrian_density_road_types
 from plots.PedestrianCyclistRatio import plot_pedestrian_cyclist_ratio
+from plots.PedestrianBehaviour import plot_pedestrian_behaviour
+from plots.PedestrianRoadCrossing import plot_pedestrian_road_crossing
+from plots.PedestrianVisibilityStatus import plot_pedestrian_visibility_status
 
 
 def main():
@@ -45,6 +51,9 @@ def main():
         "10": ("Object Behaviour Distribution", load_object_behaviour_data, plot_object_behaviour),
         "11": ("Pedestrian Density across Road Types", load_pedestrian_density_road_types, plot_pedestrian_density_road_types),
         "12": ("Pedestrian/Cyclist Ratio", load_pedestrian_cyclist_ratio, plot_pedestrian_cyclist_ratio),
+        "13": ("Pedestrian Behaviour", load_pedestrian_behaviour_data, plot_pedestrian_behaviour),
+        "14": ("Pedestrian Road Crossing", load_pedestrian_road_crossing, plot_pedestrian_road_crossing),
+        "15": ("Pedestrian Visibility Status", load_pedestrian_visibility_status, plot_pedestrian_visibility_status),
     }
 
     print("\n📊 Available Analyses:")

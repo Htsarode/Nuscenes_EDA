@@ -15,12 +15,12 @@ def add_custom_legend(ax, chart_type, y_axis_desc, x_axis_desc):
                            verticalalignment='top', bbox=dict(boxstyle="round,pad=0.3", 
                            facecolor='lightyellow', alpha=0.8))
 
-def plot_road_furniture(data: Dict[str, int], title: str = "Road Furniture Analysis", output_dir: str = "figures/exploratory"):
+def plot_drivable_area_percentage(data: Dict[str, int], title: str = "Percentage of Drivable Area Analysis", output_dir: str = "figures/exploratory"):
     """
-    Plot road furniture analysis data with multiple chart options.
+    Plot drivable area percentage data with multiple chart options.
     
     Args:
-        data: Dictionary containing road furniture type frame counts
+        data: Dictionary containing drivable area percentage counts
         title: Title for the plot
         output_dir: Directory to save the plots
     """
@@ -32,17 +32,22 @@ def plot_road_furniture(data: Dict[str, int], title: str = "Road Furniture Analy
     os.makedirs(output_dir, exist_ok=True)
     
     # Define all expected labels (will show all on x-axis even if count is 0)
-    all_labels = ["streetlights", "curbs", "guardrails", "walls", "cones or beacons", "road dividers", "barricades", "medians"]
+    all_labels = ["Low Percentage", "Medium Percentage", "High Percentage"]
     
     # Ensure all labels are present in data
     complete_data = {}
     for label in all_labels:
         complete_data[label] = data.get(label, 0)
     
-    # Chart selection menu
-    print("\n🎨 Select the type of chart to display:")
+    labels = list(complete_data.keys())
+    values = list(complete_data.values())
+    
+    # Define colors for different percentage ranges
+    colors = ['#FF4444', '#FFA500', '#4CAF50']  # Red, Orange, Green
+    
+    print("\nChoose a chart type to visualize Drivable Area Percentage:")
     print("1. Bar Chart")
-    print("2. Pie Chart") 
+    print("2. Pie Chart")
     print("3. Donut Chart")
     print("4. Heat Map")
     print("5. Radar Chart")
@@ -51,24 +56,14 @@ def plot_road_furniture(data: Dict[str, int], title: str = "Road Furniture Analy
     print("8. Scatter Plot")
     print("9. Density Plot")
     
-    try:
-        choice = int(input("Enter your choice (1-9): "))
-    except ValueError:
-        print("❌ Invalid input. Defaulting to Bar Chart.")
-        choice = 1
+    choice = input("Enter your choice (1-9): ").strip()
     
-    # Prepare data
-    labels = list(complete_data.keys())
-    values = list(complete_data.values())
-    colors = plt.cm.Set3(np.linspace(0, 1, len(labels)))  # Use colormap for 8 distinct colors
+    plt.figure(figsize=(12, 8))
     
-    plt.figure(figsize=(14, 8))
-    plt.style.use('seaborn-v0_8')
-    
-    if choice == 1:  # Bar Chart
+    if choice == '1':  # Bar Chart
         bars = plt.bar(labels, values, color=colors, alpha=0.8, edgecolor='black', linewidth=1.2)
-        plt.xlabel("Road Furniture Type", fontsize=14, fontweight='bold')
-        plt.ylabel("Frame Count", fontsize=14, fontweight='bold')
+        plt.xlabel("Drivable Area Percentage Bin", fontsize=14, fontweight='bold')
+        plt.ylabel("Percentage Of Drivable Area", fontsize=14, fontweight='bold')
         plt.title(f"{title} - Bar Chart", fontsize=16, fontweight='bold', pad=20)
         plt.xticks(rotation=45, ha='right')
         
@@ -76,9 +71,9 @@ def plot_road_furniture(data: Dict[str, int], title: str = "Road Furniture Analy
         for bar, value in zip(bars, values):
             plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + max(values)*0.01,
                     f'{value}', ha='center', va='bottom', fontsize=11, fontweight='bold')
-        add_custom_legend(plt.gca(), "bar", "Number of frames with road furniture observed", "Road furniture types")
+        add_custom_legend(plt.gca(), "bar", "Percentage Of Drivable Area", "Drivable Area Percentage Bin")
     
-    elif choice == 2:  # Pie Chart
+    elif choice == '2':  # Pie Chart
         # Filter out zero values for pie chart
         non_zero_labels = [label for label, val in zip(labels, values) if val > 0]
         non_zero_values = [val for val in values if val > 0]
@@ -92,9 +87,9 @@ def plot_road_furniture(data: Dict[str, int], title: str = "Road Furniture Analy
                     ha='center', va='center', fontsize=16)
         plt.title(f"{title} - Pie Chart", fontsize=16, fontweight='bold', pad=20)
         plt.axis('equal')
-        add_custom_legend(plt.gca(), "pie", "Number of frames with road furniture observed", "Road furniture types")
+        add_custom_legend(plt.gca(), "pie", "Percentage Of Drivable Area", "Drivable Area Percentage Bin")
     
-    elif choice == 3:  # Donut Chart
+    elif choice == '3':  # Donut Chart
         non_zero_labels = [label for label, val in zip(labels, values) if val > 0]
         non_zero_values = [val for val in values if val > 0]
         non_zero_colors = [colors[i] for i, val in enumerate(values) if val > 0]
@@ -111,49 +106,42 @@ def plot_road_furniture(data: Dict[str, int], title: str = "Road Furniture Analy
                     ha='center', va='center', fontsize=16)
         plt.title(f"{title} - Donut Chart", fontsize=16, fontweight='bold', pad=20)
         plt.axis('equal')
-        add_custom_legend(plt.gca(), "donut", "Number of frames with road furniture observed", "Road furniture types")
+        add_custom_legend(plt.gca(), "donut", "Percentage Of Drivable Area", "Drivable Area Percentage Bin")
     
-    elif choice == 4:  # Heat Map
-        # Create a heatmap with road furniture types (reshape for better visualization)
-        heat_data = np.array(values).reshape(2, -1)  # 2 rows to better display 8 items
-        row_labels = ['Infrastructure', 'Safety Features']
-        col_labels = [labels[i] for i in range(len(labels)//2)]
+    elif choice == '4':  # Heat Map
+        # Create a heatmap with drivable area percentages
+        heat_data = np.array(values).reshape(1, -1)
         
-        if len(labels) % 2 != 0:  # Handle odd number of labels
-            heat_data = np.array(values).reshape(1, -1)
-            row_labels = ['Road Furniture']
-            col_labels = labels
-        
-        sns.heatmap(heat_data, annot=True, fmt='d', cmap='YlOrRd', 
-                   xticklabels=col_labels, yticklabels=row_labels,
-                   cbar_kws={'label': 'Frame Count'})
-        plt.xlabel("Road Furniture Type", fontsize=14, fontweight='bold')
-        plt.ylabel("Category", fontsize=14, fontweight='bold')
+        sns.heatmap(heat_data, annot=True, fmt='d', cmap='RdYlGn', 
+                   xticklabels=labels, yticklabels=['Count'],
+                   cbar_kws={'label': 'Sample Count'})
+        plt.xlabel("Drivable Area Percentage Bin", fontsize=14, fontweight='bold')
+        plt.ylabel("", fontsize=14, fontweight='bold')
         plt.title(f"{title} - Heat Map", fontsize=16, fontweight='bold', pad=20)
         plt.xticks(rotation=45, ha='right')
-        add_custom_legend(plt.gca(), "heatmap", "Number of frames with road furniture observed", "Road furniture types")
+        add_custom_legend(plt.gca(), "heatmap", "Percentage Of Drivable Area", "Drivable Area Percentage Bin")
     
-    elif choice == 5:  # Radar Chart
+    elif choice == '5':  # Radar Chart
         # Set up radar chart
         angles = np.linspace(0, 2*np.pi, len(labels), endpoint=False).tolist()
         values_radar = values + [values[0]]  # Close the circle
         angles += angles[:1]  # Close the circle
         
         ax = plt.subplot(111, projection='polar')
-        ax.plot(angles, values_radar, 'o-', linewidth=2, color='#FF6B35')
-        ax.fill(angles, values_radar, alpha=0.25, color='#FF6B35')
+        ax.plot(angles, values_radar, 'o-', linewidth=2, color='#2E8B57')
+        ax.fill(angles, values_radar, alpha=0.25, color='#2E8B57')
         ax.set_xticks(angles[:-1])
         ax.set_xticklabels(labels, fontsize=10)
-        ax.set_ylabel("Frame Count", fontsize=12, fontweight='bold')
+        ax.set_ylabel("Count", fontsize=12, fontweight='bold')
         plt.title(f"{title} - Radar Chart", fontsize=16, fontweight='bold', pad=30)
-        add_custom_legend(ax, "radar", "Number of frames with road furniture observed", "Road furniture types")
+        add_custom_legend(ax, "radar", "Percentage Of Drivable Area", "Drivable Area Percentage Bin")
     
-    elif choice == 6:  # Histogram
+    elif choice == '6':  # Histogram
         # Create histogram-style visualization
         plt.hist(range(len(labels)), weights=values, bins=len(labels), 
                 color=colors, alpha=0.7, edgecolor='black')
-        plt.xlabel("Road Furniture Type", fontsize=14, fontweight='bold')
-        plt.ylabel("Frame Count", fontsize=14, fontweight='bold')
+        plt.xlabel("Drivable Area Percentage Bin", fontsize=14, fontweight='bold')
+        plt.ylabel("Percentage Of Drivable Area", fontsize=14, fontweight='bold')
         plt.title(f"{title} - Histogram", fontsize=16, fontweight='bold', pad=20)
         plt.xticks(range(len(labels)), labels, rotation=45, ha='right')
         
@@ -161,54 +149,54 @@ def plot_road_furniture(data: Dict[str, int], title: str = "Road Furniture Analy
         for i, value in enumerate(values):
             plt.text(i, value + max(values)*0.01, f'{value}', 
                     ha='center', va='bottom', fontsize=11, fontweight='bold')
-        add_custom_legend(plt.gca(), "histogram", "Number of frames with road furniture observed", "Road furniture types")
+        add_custom_legend(plt.gca(), "histogram", "Percentage Of Drivable Area", "Drivable Area Percentage Bin")
     
-    elif choice == 7:  # Stacked Bar Chart
+    elif choice == '7':  # Stacked Bar Chart
         bottom = 0
         for i, (label, value) in enumerate(zip(labels, values)):
-            plt.bar(["Road Furniture Distribution"], [value], bottom=bottom, 
+            plt.bar(["Drivable Area Analysis"], [value], bottom=bottom, 
                    color=colors[i], label=label, edgecolor='black')
             if value > 0:  # Only show text for non-zero values
                 plt.text(0, bottom + value/2, f"{label}: {value}", 
                         ha="center", va="center", fontweight="bold", fontsize=9, rotation=90)
             bottom += value
         plt.xlabel("Analysis Type", fontsize=14, fontweight='bold')
-        plt.ylabel("Frame Count", fontsize=14, fontweight='bold')
+        plt.ylabel("Percentage Of Drivable Area", fontsize=14, fontweight='bold')
         plt.title(f"{title} - Stacked Bar Chart", fontsize=16, fontweight='bold', pad=20)
         plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-        add_custom_legend(plt.gca(), "stackedbar", "Number of frames with road furniture observed", "Road furniture types")
+        add_custom_legend(plt.gca(), "stackedbar", "Percentage Of Drivable Area", "Drivable Area Percentage Bin")
     
-    elif choice == 8:  # Scatter Plot
+    elif choice == '8':  # Scatter Plot
         x_pos = np.arange(len(labels))
         plt.scatter(x_pos, values, c=colors, s=200, alpha=0.7, edgecolors='black')
         for i, (x, y) in enumerate(zip(x_pos, values)):
             plt.annotate(f"{y}", (x, y), textcoords="offset points", 
                         xytext=(0,10), ha='center', fontweight='bold')
         plt.xticks(x_pos, labels, rotation=45, ha='right')
-        plt.xlabel("Road Furniture Type", fontsize=14, fontweight='bold')
-        plt.ylabel("Frame Count", fontsize=14, fontweight='bold')
+        plt.xlabel("Drivable Area Percentage Bin", fontsize=14, fontweight='bold')
+        plt.ylabel("Percentage Of Drivable Area", fontsize=14, fontweight='bold')
         plt.title(f"{title} - Scatter Plot", fontsize=16, fontweight='bold', pad=20)
-        add_custom_legend(plt.gca(), "scatter", "Number of frames with road furniture observed", "Road furniture types")
+        add_custom_legend(plt.gca(), "scatter", "Percentage Of Drivable Area", "Drivable Area Percentage Bin")
     
-    elif choice == 9:  # Density Plot
+    elif choice == '9':  # Density Plot
         # Create density-like visualization
         df = pd.DataFrame({
-            'Road Furniture Type': [label for label, count in zip(labels, values) for _ in range(count)],
+            'Drivable Area Percentage Bin': [label for label, count in zip(labels, values) for _ in range(count)],
             'Count': [1] * sum(values)
         })
         
         if not df.empty:
-            sns.kdeplot(data=df, x='Road Furniture Type', weights='Count', 
-                       fill=True, alpha=0.6, color='#FF6B35')
+            sns.kdeplot(data=df, x='Drivable Area Percentage Bin', weights='Count', 
+                       fill=True, alpha=0.6, color='#2E8B57')
             plt.xticks(rotation=45, ha='right')
         else:
             plt.text(0.5, 0.5, 'No data to display', transform=plt.gca().transAxes,
                     ha='center', va='center', fontsize=16)
         
-        plt.xlabel("Road Furniture Type", fontsize=14, fontweight='bold')
+        plt.xlabel("Drivable Area Percentage Bin", fontsize=14, fontweight='bold')
         plt.ylabel("Density", fontsize=14, fontweight='bold')
         plt.title(f"{title} - Density Plot", fontsize=16, fontweight='bold', pad=20)
-        add_custom_legend(plt.gca(), "density", "Number of frames with road furniture observed", "Road furniture types")
+        add_custom_legend(plt.gca(), "density", "Percentage Of Drivable Area", "Drivable Area Percentage Bin")
     
     else:
         print("❌ Invalid choice. Please select 1-9.")
@@ -219,56 +207,20 @@ def plot_road_furniture(data: Dict[str, int], title: str = "Road Furniture Analy
     
     # Determine chart type for filename
     chart_types = {
-        1: "bar_chart",
-        2: "pie_chart", 
-        3: "donut_chart",
-        4: "heatmap",
-        5: "radar_chart",
-        6: "histogram",
-        7: "stacked_bar_chart",
-        8: "scatter_plot",
-        9: "density_plot"
+        '1': "bar_chart",
+        '2': "pie_chart", 
+        '3': "donut_chart",
+        '4': "heatmap",
+        '5': "radar_chart",
+        '6': "histogram",
+        '7': "stacked_bar_chart",
+        '8': "scatter_plot",
+        '9': "density_plot"
     }
     
-    chart_name = chart_types.get(choice, "chart")
-    filename = f"road_furniture_{chart_name}.png"
+    chart_type = chart_types.get(choice, "bar_chart")
+    filename = f"drivable_area_percentage_{chart_type}.png"
     filepath = os.path.join(output_dir, filename)
-    
-    # Save the plot
-    plt.savefig(filepath, dpi=300, bbox_inches='tight', facecolor='white')
-    print(f"📊 Plot saved as: {filepath}")
-    
-    # Print statistics
-    total = sum(values)
-    print(f"\n📊 Road Furniture Analysis Statistics:")
-    print(f"📈 Total road furniture instances: {total}")
-    
-    if total > 0:
-        for label, count in zip(labels, values):
-            percentage = (count / total) * 100
-            print(f"🔸 {label}: {count} ({percentage:.1f}%)")
-            
-        # Additional insights
-        print(f"\n💡 Key Insights:")
-        max_furniture = labels[values.index(max(values))]
-        print(f"🔍 Most common road furniture: {max_furniture} ({max(values)} instances)")
-        
-        # Infrastructure vs Safety categorization
-        infrastructure = ["streetlights", "curbs", "walls", "medians"]
-        safety = ["guardrails", "cones or beacons", "road dividers", "barricades"]
-        
-        infra_count = sum(complete_data[item] for item in infrastructure)
-        safety_count = sum(complete_data[item] for item in safety)
-        
-        print(f"🏗️ Infrastructure elements: {infra_count} ({infra_count/total*100:.1f}%)")
-        print(f"🛡️ Safety elements: {safety_count} ({safety_count/total*100:.1f}%)")
-    else:
-        print("⚠️ No road furniture data found in the dataset")
-    
+    plt.savefig(filepath, dpi=300, bbox_inches='tight')
+    print(f"✅ Chart saved as {filepath}")
     plt.show()
-
-if __name__ == "__main__":
-    # This plotting function should only be called from main.py with real nuScenes data
-    # No sample/test data will be used
-    print("❌ This file should be run through main.py to use real nuScenes mini dataset data.")
-    print("🔍 Run 'python main.py' and select the Road Furniture Analysis option.")

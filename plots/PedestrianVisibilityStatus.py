@@ -5,6 +5,16 @@ from typing import Dict
 import pandas as pd
 import os
 
+def add_custom_legend(ax, chart_type, y_axis_desc, x_axis_desc):
+    """Add custom legend with chart information and axis descriptions"""
+    legend_text = f"📊 {chart_type.title()} Chart\n📈 Y-axis: {y_axis_desc}\n📈 X-axis: {x_axis_desc}"
+    
+    # Add legend based on chart type (only for bar, histogram, stackedbar)
+    if chart_type.lower() in ['bar', 'histogram', 'stackedbar']:
+        legend_box = ax.text(0.02, 0.98, legend_text, transform=ax.transAxes, fontsize=9,
+                           verticalalignment='top', bbox=dict(boxstyle="round,pad=0.3", 
+                           facecolor='lightyellow', alpha=0.8))
+
 def plot_pedestrian_visibility_status(data: Dict[str, int], title: str = "Pedestrian Visibility Status Analysis", output_dir: str = "figures/exploratory"):
     """
     Plot pedestrian visibility status data with multiple chart options.
@@ -65,6 +75,7 @@ def plot_pedestrian_visibility_status(data: Dict[str, int], title: str = "Pedest
         for bar, value in zip(bars, values):
             plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + max(values)*0.01,
                     f'{value}', ha='center', va='bottom', fontsize=12, fontweight='bold')
+        add_custom_legend(plt.gca(), "bar", "Number of pedestrian instances by visibility status", "Pedestrian visibility status types")
     
     elif choice == 2:  # Pie Chart
         # Filter out zero values for pie chart
@@ -80,6 +91,7 @@ def plot_pedestrian_visibility_status(data: Dict[str, int], title: str = "Pedest
                     ha='center', va='center', fontsize=16)
         plt.title(f"{title} - Pie Chart", fontsize=16, fontweight='bold', pad=20)
         plt.axis('equal')
+        add_custom_legend(plt.gca(), "pie", "Number of pedestrian instances by visibility status", "Pedestrian visibility status types")
     
     elif choice == 3:  # Donut Chart
         non_zero_labels = [label for label, val in zip(labels, values) if val > 0]
@@ -98,6 +110,7 @@ def plot_pedestrian_visibility_status(data: Dict[str, int], title: str = "Pedest
                     ha='center', va='center', fontsize=16)
         plt.title(f"{title} - Donut Chart", fontsize=16, fontweight='bold', pad=20)
         plt.axis('equal')
+        add_custom_legend(plt.gca(), "donut", "Number of pedestrian instances by visibility status", "Pedestrian visibility status types")
     
     elif choice == 4:  # Heat Map
         # Create a heatmap matrix
@@ -107,6 +120,7 @@ def plot_pedestrian_visibility_status(data: Dict[str, int], title: str = "Pedest
                    cbar_kws={'label': 'Pedestrian Count'})
         plt.title(f"{title} - Heat Map", fontsize=16, fontweight='bold', pad=20)
         plt.xlabel("Visibility Status", fontsize=14, fontweight='bold')
+        add_custom_legend(plt.gca(), "heatmap", "Number of pedestrian instances by visibility status", "Pedestrian visibility status types")
     
     elif choice == 5:  # Radar Chart
         angles = np.linspace(0, 2*np.pi, len(labels), endpoint=False).tolist()
@@ -120,6 +134,7 @@ def plot_pedestrian_visibility_status(data: Dict[str, int], title: str = "Pedest
         ax.set_xticklabels(labels)
         ax.set_ylim(0, max(values) * 1.1 if max(values) > 0 else 1)
         plt.title(f"{title} - Radar Chart", fontsize=16, fontweight='bold', pad=20)
+        add_custom_legend(ax, "radar", "Number of pedestrian instances by visibility status", "Pedestrian visibility status types")
     
     elif choice == 6:  # Histogram
         # Create histogram-style plot
@@ -129,6 +144,7 @@ def plot_pedestrian_visibility_status(data: Dict[str, int], title: str = "Pedest
         plt.ylabel("Pedestrian Count", fontsize=14, fontweight='bold')
         plt.title(f"{title} - Histogram", fontsize=16, fontweight='bold', pad=20)
         plt.xticks(range(len(labels)), labels)
+        add_custom_legend(plt.gca(), "histogram", "Number of pedestrian instances by visibility status", "Pedestrian visibility status types")
     
     elif choice == 7:  # Stacked Bar Chart
         plt.bar(['Pedestrian Visibility'], [sum(values)], color='lightgray', alpha=0.3)
@@ -142,6 +158,7 @@ def plot_pedestrian_visibility_status(data: Dict[str, int], title: str = "Pedest
         plt.ylabel("Pedestrian Count", fontsize=14, fontweight='bold')
         plt.title(f"{title} - Stacked Bar Chart", fontsize=16, fontweight='bold', pad=20)
         plt.legend()
+        add_custom_legend(plt.gca(), "stackedbar", "Number of pedestrian instances by visibility status", "Pedestrian visibility status types")
     
     elif choice == 8:  # Scatter Plot
         x_pos = range(len(labels))
@@ -156,6 +173,7 @@ def plot_pedestrian_visibility_status(data: Dict[str, int], title: str = "Pedest
         for i, value in enumerate(values):
             plt.annotate(f'{value}', (i, value), textcoords="offset points", 
                         xytext=(0,10), ha='center', fontweight='bold')
+        add_custom_legend(plt.gca(), "scatter", "Number of pedestrian instances by visibility status", "Pedestrian visibility status types")
     
     elif choice == 9:  # Density Plot
         # Create density-like visualization
@@ -174,6 +192,7 @@ def plot_pedestrian_visibility_status(data: Dict[str, int], title: str = "Pedest
         plt.xlabel("Visibility Status", fontsize=14, fontweight='bold')
         plt.ylabel("Density", fontsize=14, fontweight='bold')
         plt.title(f"{title} - Density Plot", fontsize=16, fontweight='bold', pad=20)
+        add_custom_legend(plt.gca(), "density", "Number of pedestrian instances by visibility status", "Pedestrian visibility status types")
     
     else:
         print("❌ Invalid choice. Please select 1-9.")

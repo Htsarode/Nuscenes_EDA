@@ -5,6 +5,16 @@ from typing import Dict
 import pandas as pd
 import os
 
+def add_custom_legend(ax, chart_type, y_axis_desc, x_axis_desc):
+    """Add custom legend with chart information and axis descriptions"""
+    legend_text = f"📊 {chart_type.title()} Chart\n📈 Y-axis: {y_axis_desc}\n📈 X-axis: {x_axis_desc}"
+    
+    # Add legend based on chart type (only for bar, histogram, stackedbar)
+    if chart_type.lower() in ['bar', 'histogram', 'stackedbar']:
+        legend_box = ax.text(0.02, 0.98, legend_text, transform=ax.transAxes, fontsize=9,
+                           verticalalignment='top', bbox=dict(boxstyle="round,pad=0.3", 
+                           facecolor='lightyellow', alpha=0.8))
+
 def plot_traffic_density_weather(data: Dict[str, int], title: str = "Traffic Density vs Weather Conditions Analysis", output_dir: str = "figures/exploratory"):
     """
     Plot traffic density vs weather conditions data with multiple chart options.
@@ -77,6 +87,7 @@ def plot_traffic_density_weather(data: Dict[str, int], title: str = "Traffic Den
         for bar, value in zip(bars, values):
             plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + max(values)*0.01,
                     f'{value}', ha='center', va='bottom', fontsize=11, fontweight='bold')
+        add_custom_legend(plt.gca(), "bar", "Traffic density measurements under weather conditions", "Weather condition types")
     
     elif choice == 2:  # Pie Chart
         # Filter out zero values for pie chart
@@ -92,6 +103,7 @@ def plot_traffic_density_weather(data: Dict[str, int], title: str = "Traffic Den
                     ha='center', va='center', fontsize=16)
         plt.title(f"{title} - Pie Chart", fontsize=16, fontweight='bold', pad=20)
         plt.axis('equal')
+        add_custom_legend(plt.gca(), "pie", "Traffic density measurements under weather conditions", "Weather condition types")
     
     elif choice == 3:  # Donut Chart
         non_zero_labels = [label for label, val in zip(labels, values) if val > 0]
@@ -110,6 +122,7 @@ def plot_traffic_density_weather(data: Dict[str, int], title: str = "Traffic Den
                     ha='center', va='center', fontsize=16)
         plt.title(f"{title} - Donut Chart", fontsize=16, fontweight='bold', pad=20)
         plt.axis('equal')
+        add_custom_legend(plt.gca(), "donut", "Traffic density measurements under weather conditions", "Weather condition types")
     
     elif choice == 4:  # Heat Map
         # Create a heatmap with weather conditions (reshape for better visualization)
@@ -122,6 +135,7 @@ def plot_traffic_density_weather(data: Dict[str, int], title: str = "Traffic Den
         plt.ylabel("", fontsize=14, fontweight='bold')
         plt.title(f"{title} - Heat Map", fontsize=16, fontweight='bold', pad=20)
         plt.xticks(rotation=45, ha='right')
+        add_custom_legend(plt.gca(), "heatmap", "Traffic density measurements under weather conditions", "Weather condition types")
     
     elif choice == 5:  # Radar Chart
         # Set up radar chart
@@ -136,6 +150,7 @@ def plot_traffic_density_weather(data: Dict[str, int], title: str = "Traffic Den
         ax.set_xticklabels(labels, fontsize=10)
         ax.set_ylabel("Traffic Density", fontsize=12, fontweight='bold')
         plt.title(f"{title} - Radar Chart", fontsize=16, fontweight='bold', pad=30)
+        add_custom_legend(ax, "radar", "Traffic density measurements under weather conditions", "Weather condition types")
     
     elif choice == 6:  # Histogram
         # Create histogram-style visualization
@@ -150,6 +165,7 @@ def plot_traffic_density_weather(data: Dict[str, int], title: str = "Traffic Den
         for i, value in enumerate(values):
             plt.text(i, value + max(values)*0.01, f'{value}', 
                     ha='center', va='bottom', fontsize=11, fontweight='bold')
+        add_custom_legend(plt.gca(), "histogram", "Traffic density measurements under weather conditions", "Weather condition types")
     
     elif choice == 7:  # Stacked Bar Chart
         bottom = 0
@@ -164,6 +180,7 @@ def plot_traffic_density_weather(data: Dict[str, int], title: str = "Traffic Den
         plt.ylabel("Traffic Density", fontsize=14, fontweight='bold')
         plt.title(f"{title} - Stacked Bar Chart", fontsize=16, fontweight='bold', pad=20)
         plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+        add_custom_legend(plt.gca(), "stackedbar", "Traffic density measurements under weather conditions", "Weather condition types")
     
     elif choice == 8:  # Scatter Plot
         x_pos = np.arange(len(labels))
@@ -175,6 +192,7 @@ def plot_traffic_density_weather(data: Dict[str, int], title: str = "Traffic Den
         plt.xlabel("Weather Conditions", fontsize=14, fontweight='bold')
         plt.ylabel("Traffic Density", fontsize=14, fontweight='bold')
         plt.title(f"{title} - Scatter Plot", fontsize=16, fontweight='bold', pad=20)
+        add_custom_legend(plt.gca(), "scatter", "Traffic density measurements under weather conditions", "Weather condition types")
     
     elif choice == 9:  # Density Plot
         # Create density-like visualization
@@ -194,6 +212,7 @@ def plot_traffic_density_weather(data: Dict[str, int], title: str = "Traffic Den
         plt.xlabel("Weather Conditions", fontsize=14, fontweight='bold')
         plt.ylabel("Density", fontsize=14, fontweight='bold')
         plt.title(f"{title} - Density Plot", fontsize=16, fontweight='bold', pad=20)
+        add_custom_legend(plt.gca(), "density", "Traffic density measurements under weather conditions", "Weather condition types")
     
     else:
         print("❌ Invalid choice. Please select 1-9.")

@@ -4,6 +4,24 @@ import seaborn as sns
 import os
 from math import pi
 
+def add_custom_legend(ax, chart_type, y_axis_motive=None, x_axis_meaning=None):
+    """Add custom legend explaining axis meanings"""
+    legend_text = []
+    
+    # Add y-axis motive only for bar, histogram, and stacked bar charts
+    if chart_type in ['bar', 'histogram', 'stackedbar'] and y_axis_motive:
+        legend_text.append(f"Y-axis: {y_axis_motive}")
+    
+    if x_axis_meaning:
+        legend_text.append(f"X-axis: {x_axis_meaning}")
+    
+    if legend_text:
+        legend_content = "\n".join(legend_text)
+        ax.text(0.02, 0.98, legend_content, transform=ax.transAxes,
+                fontsize=10, verticalalignment='top', 
+                bbox=dict(boxstyle='round,pad=0.3', facecolor='lightyellow', alpha=0.8),
+                zorder=1000)
+
 def plot_pedestrian_behaviour(behaviour_data, output_dir="figures/exploratory"):
     """
     Plot pedestrian behaviour (Standing, Walking, Running) with multiple chart options.
@@ -77,11 +95,17 @@ def plot_pedestrian_behaviour(behaviour_data, output_dir="figures/exploratory"):
             ax_chart.set_xlabel("Activity Type", fontsize=12, fontweight="bold")
             ax_chart.set_ylabel("Pedestrian Count", fontsize=12, fontweight="bold")
             ax_chart.grid(True, alpha=0.3)
+            add_custom_legend(ax_chart, "bar", 
+                            "Number of pedestrian instances observed",
+                            "Pedestrian behavior types/categories")
 
         elif chart == "pie":
             ax_chart.pie(values, labels=labels, autopct="%1.1f%%",
                          startangle=90, colors=colors, explode=[0.05]*len(labels))
             ax_chart.set_title("Pie Chart - Pedestrian Behaviour", fontsize=14, fontweight="bold")
+            add_custom_legend(ax_chart, "pie", 
+                            "Number of pedestrian instances observed",
+                            "Pedestrian behavior types/categories")
 
         elif chart == "donut":
             wedges, texts, autotexts = ax_chart.pie(values, labels=labels,
@@ -93,12 +117,18 @@ def plot_pedestrian_behaviour(behaviour_data, output_dir="figures/exploratory"):
             ax_chart.text(0, 0, f"Total\n{total}", ha="center", va="center",
                           fontsize=12, fontweight="bold", color="darkblue")
             ax_chart.set_title("Donut Chart - Pedestrian Behaviour", fontsize=14, fontweight="bold")
+            add_custom_legend(ax_chart, "donut", 
+                            "Number of pedestrian instances observed",
+                            "Pedestrian behavior types/categories")
 
         elif chart == "heatmap":
             sns.heatmap(np.array([values]), annot=True, fmt="d", cmap="YlOrRd",
                         xticklabels=labels, yticklabels=["Pedestrian Count"], ax=ax_chart,
                         cbar_kws={'label': 'Count'})
             ax_chart.set_title("Heat Map - Pedestrian Behaviour Intensity", fontsize=14, fontweight="bold")
+            add_custom_legend(ax_chart, "heatmap", 
+                            "Number of pedestrian instances observed",
+                            "Pedestrian behavior types/categories")
 
         elif chart == "radar":
             fig.clf()
@@ -113,6 +143,9 @@ def plot_pedestrian_behaviour(behaviour_data, output_dir="figures/exploratory"):
             ax_chart.set_xticks(angles[:-1])
             ax_chart.set_xticklabels(labels)
             ax_chart.set_title("Radar Chart - Pedestrian Behaviour", fontsize=14, fontweight="bold")
+            add_custom_legend(ax_chart, "radar", 
+                            "Number of pedestrian instances observed",
+                            "Pedestrian behavior types/categories")
 
         elif chart == "histogram":
             ax_chart.hist(values, bins=max(3, len(set(values))), color="lightblue", edgecolor="black", alpha=0.7)
@@ -120,6 +153,9 @@ def plot_pedestrian_behaviour(behaviour_data, output_dir="figures/exploratory"):
             ax_chart.set_xlabel("Pedestrian Count", fontsize=12, fontweight="bold")
             ax_chart.set_ylabel("Frequency", fontsize=12, fontweight="bold")
             ax_chart.grid(True, alpha=0.3)
+            add_custom_legend(ax_chart, "histogram", 
+                            "Number of pedestrian instances observed",
+                            "Pedestrian behavior types/categories")
 
         elif chart == "stackedbar":
             ax_chart.bar(labels, values, color="orange", label="Total Count", alpha=0.8)
@@ -129,6 +165,9 @@ def plot_pedestrian_behaviour(behaviour_data, output_dir="figures/exploratory"):
             ax_chart.set_ylabel("Pedestrian Count", fontsize=12, fontweight="bold")
             ax_chart.legend()
             ax_chart.grid(True, alpha=0.3)
+            add_custom_legend(ax_chart, "stackedbar", 
+                            "Number of pedestrian instances observed",
+                            "Pedestrian behavior types/categories")
 
         elif chart == "scatter":
             x_positions = range(len(labels))
@@ -139,6 +178,9 @@ def plot_pedestrian_behaviour(behaviour_data, output_dir="figures/exploratory"):
             ax_chart.set_xlabel("Activity Type", fontsize=12, fontweight="bold")
             ax_chart.set_ylabel("Pedestrian Count", fontsize=12, fontweight="bold")
             ax_chart.grid(True, alpha=0.3)
+            add_custom_legend(ax_chart, "scatter", 
+                            "Number of pedestrian instances observed",
+                            "Pedestrian behavior types/categories")
 
         elif chart == "density":
             if len(set(values)) > 1:
@@ -151,6 +193,9 @@ def plot_pedestrian_behaviour(behaviour_data, output_dir="figures/exploratory"):
                              ha="center", va="center", transform=ax_chart.transAxes,
                              fontsize=12, bbox=dict(boxstyle="round", facecolor="yellow", alpha=0.5))
                 ax_chart.set_title("Density Plot - Pedestrian Behaviour", fontsize=14, fontweight="bold")
+            add_custom_legend(ax_chart, "density", 
+                            "Number of pedestrian instances observed",
+                            "Pedestrian behavior types/categories")
 
         add_stats(axes[1])
 

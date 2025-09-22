@@ -7,6 +7,24 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+def add_custom_legend(ax, chart_type, y_axis_motive=None, x_axis_meaning=None):
+    """Add custom legend explaining axis meanings"""
+    legend_text = []
+    
+    # Add y-axis motive only for bar, histogram, and stacked bar charts
+    if chart_type in ['bar', 'histogram', 'stackedbar'] and y_axis_motive:
+        legend_text.append(f"Y-axis: {y_axis_motive}")
+    
+    if x_axis_meaning:
+        legend_text.append(f"X-axis: {x_axis_meaning}")
+    
+    if legend_text:
+        legend_content = "\n".join(legend_text)
+        ax.text(0.02, 0.98, legend_content, transform=ax.transAxes,
+                fontsize=10, verticalalignment='top', 
+                bbox=dict(boxstyle='round,pad=0.3', facecolor='lightyellow', alpha=0.8),
+                zorder=1000)
+
 def plot_vehicle_class(vehicle_data, output_dir="figures/exploratory"):
     """
     Plot vehicle class distribution with multiple chart options.
@@ -98,11 +116,13 @@ Distribution:"""
             ax_chart.set_xlabel("Vehicle Class", fontsize=12, fontweight="bold")
             ax_chart.set_ylabel("Vehicle Count", fontsize=12, fontweight="bold")
             ax_chart.grid(True, alpha=0.3)
+            add_custom_legend(ax_chart, "bar", "Number of vehicles/objects detected", "Vehicle types/classes")
 
         elif chart == "pie":
             ax_chart.pie(values, labels=labels, autopct="%1.1f%%",
                          startangle=90, colors=colors, explode=[0.05]*len(labels))
             ax_chart.set_title("Pie Chart - Vehicle Class Percentage Distribution", fontsize=14, fontweight="bold")
+            add_custom_legend(ax_chart, "pie", None, "Vehicle class proportions")
 
         elif chart == "donut":
             wedges, texts, autotexts = ax_chart.pie(values, labels=labels,
@@ -114,6 +134,7 @@ Distribution:"""
             ax_chart.text(0, 0, f"Total\n{total}", ha="center", va="center",
                           fontsize=12, fontweight="bold", color="darkblue")
             ax_chart.set_title("Donut Chart - Vehicle Class Counts", fontsize=14, fontweight="bold")
+            add_custom_legend(ax_chart, "donut", None, "Vehicle class counts")
 
         elif chart == "heatmap":
             sns.heatmap(np.array([values]), annot=True, fmt="d", cmap="YlOrRd",
@@ -141,6 +162,7 @@ Distribution:"""
             ax_chart.set_xlabel("Vehicle Counts", fontsize=12, fontweight="bold")
             ax_chart.set_ylabel("Frequency", fontsize=12, fontweight="bold")
             ax_chart.grid(True, alpha=0.3)
+            add_custom_legend(ax_chart, "histogram", "Frequency of detections", "Vehicle count ranges")
 
         elif chart == "stackedbar":
             ax_chart.bar(labels, values, color="steelblue", label="Total Count", alpha=0.8)
@@ -150,6 +172,7 @@ Distribution:"""
             ax_chart.set_ylabel("Vehicle Count", fontsize=12, fontweight="bold")
             ax_chart.legend()
             ax_chart.grid(True, alpha=0.3)
+            add_custom_legend(ax_chart, "stackedbar", "Vehicle count", "Vehicle class distribution")
 
         elif chart == "scatter":
             x_positions = range(len(labels))

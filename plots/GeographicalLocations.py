@@ -4,6 +4,26 @@ import seaborn as sns
 import os
 from math import pi
 
+def add_custom_legend(ax, chart_type, y_axis_motive, x_axis_meaning):
+    """
+    Add a custom legend explaining the meaning of x and y axes.
+    Only shows y-axis motive for bar, histogram, and stacked bar charts.
+    
+    Args:
+        ax: The matplotlib axes object
+        chart_type: Type of chart (bar, pie, donut, heatmap, radar, histogram, stackedbar, scatter, density)
+        y_axis_motive: Description of what the y-axis represents
+        x_axis_meaning: Description of what the x-axis represents
+    """
+    legend_text = f"📊 X-Axis: {x_axis_meaning}"
+    
+    # Only show y-axis motive for specific chart types
+    if chart_type in ["bar", "histogram", "stackedbar"]:
+        legend_text += f"\n📈 Y-Axis: {y_axis_motive}"
+    
+    ax.text(0.02, 0.98, legend_text, transform=ax.transAxes, fontsize=9, 
+            verticalalignment='top', bbox=dict(boxstyle='round', facecolor='lightyellow', alpha=0.8))
+
 def plot_geographical_locations(location_data, output_dir="figures/exploratory"):
     os.makedirs(output_dir, exist_ok=True)
 
@@ -86,11 +106,17 @@ Distribution:"""
                               ha="center", va="bottom", fontweight="bold")
             ax_chart.set_title("Bar Chart - Region Counts")
             ax_chart.set_ylabel("Scenes")
+            add_custom_legend(ax_chart, "bar", 
+                            "Number of scenes/frames observed",
+                            "Geographical locations/regions")
 
         elif chart == "pie":
             ax_chart.pie(values, labels=labels, autopct="%1.1f%%",
                          startangle=90, colors=colors, explode=[0.05]*len(labels))
             ax_chart.set_title("Pie Chart - Percentage Distribution")
+            add_custom_legend(ax_chart, "pie", 
+                            "Number of scenes/frames observed",
+                            "Geographical locations/regions")
 
         elif chart == "donut":
             wedges, texts, autotexts = ax_chart.pie(values, labels=labels,
@@ -102,11 +128,17 @@ Distribution:"""
             ax_chart.text(0, 0, f"Total\n{total}", ha="center", va="center",
                           fontsize=12, fontweight="bold", color="darkblue")
             ax_chart.set_title("Donut Chart - Region Counts")
+            add_custom_legend(ax_chart, "donut", 
+                            "Number of scenes/frames observed",
+                            "Geographical locations/regions")
 
         elif chart == "heatmap":
             sns.heatmap(np.array([values]), annot=True, fmt="d", cmap="Blues",
                         xticklabels=labels, yticklabels=["Scenes"], ax=ax_chart)
             ax_chart.set_title("Heat Map - Region Intensity")
+            add_custom_legend(ax_chart, "heatmap", 
+                            "Number of scenes/frames observed",
+                            "Geographical locations/regions")
 
         elif chart == "radar":
             fig.clf()

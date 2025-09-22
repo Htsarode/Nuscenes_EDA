@@ -4,6 +4,26 @@ import seaborn as sns
 import os
 from math import pi
 
+def add_custom_legend(ax, chart_type, y_axis_motive, x_axis_meaning):
+    """
+    Add a custom legend explaining the meaning of x and y axes.
+    Only shows y-axis motive for bar, histogram, and stacked bar charts.
+    
+    Args:
+        ax: The matplotlib axes object
+        chart_type: Type of chart (bar, pie, donut, heatmap, radar, histogram, stackedbar, scatter, density)
+        y_axis_motive: Description of what the y-axis represents
+        x_axis_meaning: Description of what the x-axis represents
+    """
+    legend_text = f"📊 X-Axis: {x_axis_meaning}"
+    
+    # Only show y-axis motive for specific chart types
+    if chart_type in ["bar", "histogram", "stackedbar"]:
+        legend_text += f"\n📈 Y-Axis: {y_axis_motive}"
+    
+    ax.text(0.02, 0.98, legend_text, transform=ax.transAxes, fontsize=9, 
+            verticalalignment='top', bbox=dict(boxstyle='round', facecolor='lightyellow', alpha=0.8))
+
 def plot_pedestrian_cyclist_ratio(ratio_data, output_dir="figures/exploratory"):
     """
     Plot pedestrian/cyclist ratio with multiple chart options.
@@ -109,11 +129,17 @@ Distribution:"""
             ax_chart.grid(True, alpha=0.3)
             # Rotate x-axis labels for better readability
             ax_chart.tick_params(axis='x', rotation=25)
+            add_custom_legend(ax_chart, "bar", 
+                            "Number of pedestrian instances observed",
+                            "Pedestrian and cyclist types")
 
         elif chart == "pie":
             ax_chart.pie(values, labels=labels, autopct="%1.1f%%",
                          startangle=90, colors=colors, explode=[0.05]*len(labels))
             ax_chart.set_title("Pie Chart - Pedestrian/Cyclist Distribution", fontsize=14, fontweight="bold")
+            add_custom_legend(ax_chart, "pie", 
+                            "Number of pedestrian instances observed",
+                            "Pedestrian and cyclist types")
 
         elif chart == "donut":
             wedges, texts, autotexts = ax_chart.pie(values, labels=labels,
@@ -125,6 +151,9 @@ Distribution:"""
             ax_chart.text(0, 0, f"Total\n{total}", ha="center", va="center",
                           fontsize=12, fontweight="bold", color="darkblue")
             ax_chart.set_title("Donut Chart - Pedestrian/Cyclist Ratio", fontsize=14, fontweight="bold")
+            add_custom_legend(ax_chart, "donut", 
+                            "Number of pedestrian instances observed",
+                            "Pedestrian and cyclist types")
 
         elif chart == "heatmap":
             sns.heatmap(np.array([values]), annot=True, fmt="d", cmap="YlOrRd",
@@ -132,6 +161,9 @@ Distribution:"""
                         cbar_kws={'label': 'Count'})
             ax_chart.set_title("Heat Map - Occurrence Intensity", fontsize=14, fontweight="bold")
             ax_chart.tick_params(axis='x', rotation=25)
+            add_custom_legend(ax_chart, "heatmap", 
+                            "Number of pedestrian instances observed",
+                            "Pedestrian and cyclist types")
 
         elif chart == "radar":
             fig.clf()
@@ -146,6 +178,9 @@ Distribution:"""
             ax_chart.set_xticks(angles[:-1])
             ax_chart.set_xticklabels(labels)
             ax_chart.set_title("Radar Chart - Pedestrian/Cyclist Distribution", fontsize=14, fontweight="bold")
+            add_custom_legend(ax_chart, "radar", 
+                            "Number of pedestrian instances observed",
+                            "Pedestrian and cyclist types")
 
         elif chart == "histogram":
             ax_chart.hist(values, bins=max(5, len(set(values))), color="lightcoral", edgecolor="black", alpha=0.7)
@@ -153,6 +188,9 @@ Distribution:"""
             ax_chart.set_xlabel("Occurrence Counts", fontsize=12, fontweight="bold")
             ax_chart.set_ylabel("Frequency", fontsize=12, fontweight="bold")
             ax_chart.grid(True, alpha=0.3)
+            add_custom_legend(ax_chart, "histogram", 
+                            "Number of pedestrian instances observed",
+                            "Pedestrian and cyclist types")
 
         elif chart == "stackedbar":
             ax_chart.bar(labels, values, color="mediumseagreen", label="Total Count", alpha=0.8)
@@ -163,6 +201,9 @@ Distribution:"""
             ax_chart.legend()
             ax_chart.grid(True, alpha=0.3)
             ax_chart.tick_params(axis='x', rotation=25)
+            add_custom_legend(ax_chart, "stackedbar", 
+                            "Number of pedestrian instances observed",
+                            "Pedestrian and cyclist types")
 
         elif chart == "scatter":
             x_positions = range(len(labels))
@@ -173,6 +214,9 @@ Distribution:"""
             ax_chart.set_xlabel("Object Type", fontsize=12, fontweight="bold")
             ax_chart.set_ylabel("Occurrence Count", fontsize=12, fontweight="bold")
             ax_chart.grid(True, alpha=0.3)
+            add_custom_legend(ax_chart, "scatter", 
+                            "Number of pedestrian instances observed",
+                            "Pedestrian and cyclist types")
 
         elif chart == "density":
             if len(set(values)) > 1:  # Only plot if there's variation in data
@@ -185,6 +229,9 @@ Distribution:"""
                              ha="center", va="center", transform=ax_chart.transAxes,
                              fontsize=12, bbox=dict(boxstyle="round", facecolor="yellow", alpha=0.5))
                 ax_chart.set_title("Density Plot - Occurrence Distribution", fontsize=14, fontweight="bold")
+            add_custom_legend(ax_chart, "density", 
+                            "Number of pedestrian instances observed",
+                            "Pedestrian and cyclist types")
 
         add_stats(axes[1])
 

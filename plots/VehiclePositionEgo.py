@@ -5,6 +5,26 @@ from typing import Dict
 import pandas as pd
 import os
 
+def add_custom_legend(ax, chart_type, y_axis_motive, x_axis_meaning):
+    """
+    Add a custom legend explaining the meaning of x and y axes.
+    Only shows y-axis motive for bar, histogram, and stacked bar charts.
+    
+    Args:
+        ax: The matplotlib axes object
+        chart_type: Type of chart (bar, pie, donut, heatmap, radar, histogram, stackedbar, scatter, density)
+        y_axis_motive: Description of what the y-axis represents
+        x_axis_meaning: Description of what the x-axis represents
+    """
+    legend_text = f"📊 X-Axis: {x_axis_meaning}"
+    
+    # Only show y-axis motive for specific chart types
+    if chart_type in ["bar", "histogram", "stackedbar"]:
+        legend_text += f"\n📈 Y-Axis: {y_axis_motive}"
+    
+    ax.text(0.02, 0.98, legend_text, transform=ax.transAxes, fontsize=9, 
+            verticalalignment='top', bbox=dict(boxstyle='round', facecolor='lightyellow', alpha=0.8))
+
 def plot_vehicle_position_ego(data: Dict[str, int], title: str = "Vehicle Position w.r.t. Ego Vehicle Analysis", output_dir: str = "figures/exploratory"):
     """
     Plot vehicle position relative to ego vehicle analysis data with multiple chart options.
@@ -74,6 +94,7 @@ def plot_vehicle_position_ego(data: Dict[str, int], title: str = "Vehicle Positi
         for bar, value in zip(bars, values):
             plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + max(values)*0.01,
                     f'{value}', ha='center', va='bottom', fontsize=12, fontweight='bold')
+        add_custom_legend(plt.gca(), "bar", "Number of vehicle instances observed", "Vehicle position relative to ego")
     
     elif choice == 2:  # Pie Chart
         # Filter out zero values for pie chart
@@ -89,6 +110,7 @@ def plot_vehicle_position_ego(data: Dict[str, int], title: str = "Vehicle Positi
                     ha='center', va='center', fontsize=16)
         plt.title(f"{title} - Pie Chart", fontsize=16, fontweight='bold', pad=20)
         plt.axis('equal')
+        add_custom_legend(plt.gca(), "pie", "Number of vehicle instances observed", "Vehicle position relative to ego")
     
     elif choice == 3:  # Donut Chart
         non_zero_labels = [label for label, val in zip(labels, values) if val > 0]
@@ -107,6 +129,7 @@ def plot_vehicle_position_ego(data: Dict[str, int], title: str = "Vehicle Positi
                     ha='center', va='center', fontsize=16)
         plt.title(f"{title} - Donut Chart", fontsize=16, fontweight='bold', pad=20)
         plt.axis('equal')
+        add_custom_legend(plt.gca(), "donut", "Number of vehicle instances observed", "Vehicle position relative to ego")
     
     elif choice == 4:  # Heat Map
         # Create a heatmap with position types
@@ -119,6 +142,7 @@ def plot_vehicle_position_ego(data: Dict[str, int], title: str = "Vehicle Positi
         plt.ylabel("", fontsize=14, fontweight='bold')
         plt.title(f"{title} - Heat Map", fontsize=16, fontweight='bold', pad=20)
         plt.xticks(rotation=0, ha='center')
+        add_custom_legend(plt.gca(), "heatmap", "Number of vehicle instances observed", "Vehicle position relative to ego")
     
     elif choice == 5:  # Radar Chart
         # Set up radar chart
@@ -133,6 +157,7 @@ def plot_vehicle_position_ego(data: Dict[str, int], title: str = "Vehicle Positi
         ax.set_xticklabels(labels, fontsize=10)
         ax.set_ylabel("Vehicle Count", fontsize=12, fontweight='bold')
         plt.title(f"{title} - Radar Chart", fontsize=16, fontweight='bold', pad=30)
+        add_custom_legend(ax, "radar", "Number of vehicle instances observed", "Vehicle position relative to ego")
     
     elif choice == 6:  # Histogram
         # Create histogram-style visualization
@@ -147,6 +172,7 @@ def plot_vehicle_position_ego(data: Dict[str, int], title: str = "Vehicle Positi
         for i, value in enumerate(values):
             plt.text(i, value + max(values)*0.01, f'{value}', 
                     ha='center', va='bottom', fontsize=12, fontweight='bold')
+        add_custom_legend(plt.gca(), "histogram", "Number of vehicle instances observed", "Vehicle position relative to ego")
     
     elif choice == 7:  # Stacked Bar Chart
         bottom = 0
@@ -161,6 +187,7 @@ def plot_vehicle_position_ego(data: Dict[str, int], title: str = "Vehicle Positi
         plt.ylabel("Vehicle Count", fontsize=14, fontweight='bold')
         plt.title(f"{title} - Stacked Bar Chart", fontsize=16, fontweight='bold', pad=20)
         plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+        add_custom_legend(plt.gca(), "stackedbar", "Number of vehicle instances observed", "Vehicle position categories")
     
     elif choice == 8:  # Scatter Plot
         x_pos = np.arange(len(labels))
@@ -172,6 +199,7 @@ def plot_vehicle_position_ego(data: Dict[str, int], title: str = "Vehicle Positi
         plt.xlabel("Relative Position", fontsize=14, fontweight='bold')
         plt.ylabel("Vehicle Count", fontsize=14, fontweight='bold')
         plt.title(f"{title} - Scatter Plot", fontsize=16, fontweight='bold', pad=20)
+        add_custom_legend(plt.gca(), "scatter", "Number of vehicle instances observed", "Vehicle position relative to ego")
     
     elif choice == 9:  # Density Plot
         # Create density-like visualization
@@ -184,6 +212,7 @@ def plot_vehicle_position_ego(data: Dict[str, int], title: str = "Vehicle Positi
             sns.kdeplot(data=df, x='Position', weights='Count', 
                        fill=True, alpha=0.6, color='#FF6B6B')
             plt.xticks(rotation=0, ha='center')
+            add_custom_legend(plt.gca(), "density", "Number of vehicle instances observed", "Position density distribution")
         else:
             plt.text(0.5, 0.5, 'No data to display', transform=plt.gca().transAxes,
                     ha='center', va='center', fontsize=16)

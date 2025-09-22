@@ -3,6 +3,16 @@ import numpy as np
 import seaborn as sns
 import os
 
+def add_custom_legend(ax, chart_type, y_axis_desc, x_axis_desc):
+    """Add custom legend with chart information and axis descriptions"""
+    legend_text = f"📊 {chart_type.title()} Chart\n📈 Y-axis: {y_axis_desc}\n📈 X-axis: {x_axis_desc}"
+    
+    # Add legend based on chart type (only for bar, histogram, stackedbar)
+    if chart_type.lower() in ['bar', 'histogram', 'stackedbar']:
+        legend_box = ax.text(0.02, 0.98, legend_text, transform=ax.transAxes, fontsize=9,
+                           verticalalignment='top', bbox=dict(boxstyle="round,pad=0.3", 
+                           facecolor='lightyellow', alpha=0.8))
+
 def plot_road_details_distribution(road_details, output_dir="figures/exploratory"):
     os.makedirs(output_dir, exist_ok=True)
 
@@ -86,11 +96,13 @@ Distribution:"""
                 h = bar.get_height()
                 ax_chart.text(bar.get_x()+bar.get_width()/2, h, f"{int(h)}",
                               ha="center", va="bottom", fontweight="bold")
+            add_custom_legend(ax_chart, "bar", "Number of road frames observed", "Road curvature types")
 
         elif chart == "pie":
             ax_chart.pie(values, labels=labels, autopct="%1.1f%%",
                          startangle=90, colors=colors, explode=[0.05]*len(labels))
             ax_chart.set_title("Pie Chart - Percentage Distribution")
+            add_custom_legend(ax_chart, "pie", "Number of road frames observed", "Road curvature types")
 
         elif chart == "donut":
             wedges, texts, autotexts = ax_chart.pie(values, labels=labels,
@@ -102,11 +114,13 @@ Distribution:"""
             ax_chart.text(0, 0, f"Total\nFrames\n{total_frames}", ha="center", va="center",
                           fontsize=12, fontweight="bold", color="darkblue")
             ax_chart.set_title("Donut Chart - Frame Counts")
+            add_custom_legend(ax_chart, "donut", "Number of road frames observed", "Road curvature types")
 
         elif chart == "heatmap":
             sns.heatmap(np.array([values]), annot=True, fmt="d", cmap="Oranges",
                         xticklabels=labels, yticklabels=["Frames"], ax=ax_chart)
             ax_chart.set_title("Heat Map - Road Curvature Intensity")
+            add_custom_legend(ax_chart, "heatmap", "Number of road frames observed", "Road curvature types")
 
         elif chart == "radar":
             fig.clf()
@@ -121,24 +135,29 @@ Distribution:"""
             ax_chart.set_xticks(angles[:-1])
             ax_chart.set_xticklabels(labels)
             ax_chart.set_title("Radar Chart - Road Curvature Distribution")
+            add_custom_legend(ax_chart, "radar", "Number of road frames observed", "Road curvature types")
 
         elif chart == "histogram":
             ax_chart.hist(values, bins=6, color="skyblue", edgecolor="black")
             ax_chart.set_title("Histogram - Frame Counts")
+            add_custom_legend(ax_chart, "histogram", "Number of road frames observed", "Road curvature types")
 
         elif chart == "stackedbar":
             ax_chart.bar(labels, values, color="steelblue", label="Frames")
             ax_chart.bar(labels, [v/2 for v in values], color="orange", label="Half Frames")
             ax_chart.set_title("Stacked Bar Chart")
             ax_chart.legend()
+            add_custom_legend(ax_chart, "stackedbar", "Number of road frames observed", "Road curvature types")
 
         elif chart == "scatter":
             ax_chart.scatter(labels, values, color="purple", s=100)
             ax_chart.set_title("Scatter Plot - Road Curvature")
+            add_custom_legend(ax_chart, "scatter", "Number of road frames observed", "Road curvature types")
 
         elif chart == "density":
             sns.kdeplot(values, fill=True, color="green", ax=ax_chart)
             ax_chart.set_title("Density Plot - Frame Distribution")
+            add_custom_legend(ax_chart, "density", "Number of road frames observed", "Road curvature types")
 
         add_stats(axes[1])
 

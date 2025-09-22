@@ -3,6 +3,26 @@ import numpy as np
 import seaborn as sns
 import os
 
+def add_custom_legend(ax, chart_type, y_axis_motive, x_axis_meaning):
+    """
+    Add a custom legend explaining the meaning of x and y axes.
+    Only shows y-axis motive for bar, histogram, and stacked bar charts.
+    
+    Args:
+        ax: The matplotlib axes object
+        chart_type: Type of chart (bar, pie, donut, heatmap, radar, histogram, stackedbar, scatter, density)
+        y_axis_motive: Description of what the y-axis represents
+        x_axis_meaning: Description of what the x-axis represents
+    """
+    legend_text = f"📊 X-Axis: {x_axis_meaning}"
+    
+    # Only show y-axis motive for specific chart types
+    if chart_type in ["bar", "histogram", "stackedbar"]:
+        legend_text += f"\n📈 Y-Axis: {y_axis_motive}"
+    
+    ax.text(0.02, 0.98, legend_text, transform=ax.transAxes, fontsize=9, 
+            verticalalignment='top', bbox=dict(boxstyle='round', facecolor='lightyellow', alpha=0.8))
+
 def plot_rare_class_occurrences(rare_class_data, output_dir="figures/exploratory"):
     os.makedirs(output_dir, exist_ok=True)
 
@@ -90,11 +110,13 @@ Distribution:"""
                               ha="center", va="bottom", fontweight="bold")
             ax_chart.set_title("Bar Chart - Rare Classes")
             ax_chart.set_ylabel("Occurrences")
+            add_custom_legend(ax_chart, "bar", "Number of rare class instances observed", "Rare object types")
 
         elif chart == "pie":
             ax_chart.pie(values, labels=labels, autopct="%1.1f%%",
                          startangle=90, colors=colors, explode=[0.05]*len(labels))
             ax_chart.set_title("Pie Chart - Rare Class Distribution")
+            add_custom_legend(ax_chart, "pie", "Number of rare class instances observed", "Rare object types")
 
         elif chart == "donut":
             wedges, texts, autotexts = ax_chart.pie(values, labels=labels,
@@ -106,11 +128,13 @@ Distribution:"""
             ax_chart.text(0, 0, f"Total\n{total}", ha="center", va="center",
                           fontsize=12, fontweight="bold", color="darkred")
             ax_chart.set_title("Donut Chart - Occurrences")
+            add_custom_legend(ax_chart, "donut", "Number of rare class instances observed", "Rare object types")
 
         elif chart == "heatmap":
             sns.heatmap(np.array([values]), annot=True, fmt="d", cmap="Reds",
                         xticklabels=labels, yticklabels=["Occurrences"], ax=ax_chart)
             ax_chart.set_title("Heat Map - Rare Class Intensity")
+            add_custom_legend(ax_chart, "heatmap", "Number of rare class instances observed", "Rare object types")
 
         elif chart == "radar":
             fig.clf()
@@ -125,26 +149,31 @@ Distribution:"""
             ax_chart.set_xticks(angles[:-1])
             ax_chart.set_xticklabels(labels)
             ax_chart.set_title("Radar Chart - Rare Classes")
+            add_custom_legend(ax_chart, "radar", "Number of rare class instances observed", "Rare object types")
 
         elif chart == "histogram":
             ax_chart.hist(values, bins=4, color="skyblue", edgecolor="black")
             ax_chart.set_title("Histogram - Occurrences")
+            add_custom_legend(ax_chart, "histogram", "Frequency of occurrence", "Occurrence count ranges")
 
         elif chart == "stackedbar":
             ax_chart.bar(labels, values, color="steelblue", label="Occurrences")
             ax_chart.bar(labels, [v/2 for v in values], color="orange", label="Half")
             ax_chart.set_title("Stacked Bar Chart")
             ax_chart.legend()
+            add_custom_legend(ax_chart, "stackedbar", "Number of rare class instances observed", "Rare object types")
 
         elif chart == "scatter":
             ax_chart.scatter(labels, values, color="purple", s=100)
             ax_chart.set_title("Scatter Plot - Rare Classes")
             ax_chart.set_ylabel("Occurrences")
+            add_custom_legend(ax_chart, "scatter", "Number of rare class instances observed", "Rare object types")
 
         elif chart == "density":
             sns.kdeplot(values, fill=True, color="red", ax=ax_chart)
             ax_chart.set_title("Density Plot - Rare Class Distribution")
             ax_chart.set_xlabel("Occurrences")
+            add_custom_legend(ax_chart, "density", "Number of rare class instances observed", "Occurrence count distribution")
 
         add_stats(axes[1])
 

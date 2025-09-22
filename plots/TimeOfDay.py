@@ -4,6 +4,26 @@ import seaborn as sns
 import os
 from math import pi
 
+def add_custom_legend(ax, chart_type, y_axis_motive, x_axis_meaning):
+    """
+    Add a custom legend explaining the meaning of x and y axes.
+    Only shows y-axis motive for bar, histogram, and stacked bar charts.
+    
+    Args:
+        ax: The matplotlib axes object
+        chart_type: Type of chart (bar, pie, donut, heatmap, radar, histogram, stackedbar, scatter, density)
+        y_axis_motive: Description of what the y-axis represents
+        x_axis_meaning: Description of what the x-axis represents
+    """
+    legend_text = f"📊 X-Axis: {x_axis_meaning}"
+    
+    # Only show y-axis motive for specific chart types
+    if chart_type in ["bar", "histogram", "stackedbar"]:
+        legend_text += f"\n📈 Y-Axis: {y_axis_motive}"
+    
+    ax.text(0.02, 0.98, legend_text, transform=ax.transAxes, fontsize=9, 
+            verticalalignment='top', bbox=dict(boxstyle='round', facecolor='lightyellow', alpha=0.8))
+
 def plot_time_of_day_distribution(time_data, output_dir="figures/exploratory"):
     os.makedirs(output_dir, exist_ok=True)
 
@@ -85,6 +105,9 @@ Time of Day Distribution:"""
             ax_chart.set_title("Bar Chart - Scene Counts")
             ax_chart.set_ylabel("Number of Scenes")
             ax_chart.grid(axis="y", linestyle="--", alpha=0.7)
+            add_custom_legend(ax_chart, "bar", 
+                            "Number of scenes/frames observed",
+                            "Time of day periods")
 
         elif chart == "pie":
             wedges, texts, autotexts = ax_chart.pie(values, labels=labels,
@@ -94,6 +117,9 @@ Time of Day Distribution:"""
             for autotext in autotexts:
                 autotext.set_color('white')
                 autotext.set_fontweight('bold')
+            add_custom_legend(ax_chart, "pie", 
+                            "Number of scenes/frames observed",
+                            "Time of day periods")
 
         elif chart == "donut":
             wedges, texts, autotexts = ax_chart.pie(values, labels=labels,
@@ -105,6 +131,9 @@ Time of Day Distribution:"""
             ax_chart.text(0, 0, f'Total\nScenes\n{total_scenes}', ha='center', va='center',
                           fontsize=12, fontweight='bold', color='darkblue')
             ax_chart.set_title("Donut Chart - Scene Counts")
+            add_custom_legend(ax_chart, "donut", 
+                            "Number of scenes/frames observed",
+                            "Time of day periods")
 
         elif chart == "heatmap":
             data = np.array(values).reshape(1, -1)
@@ -113,6 +142,9 @@ Time of Day Distribution:"""
                         ax=ax_chart, cbar_kws={'label': 'Number of Scenes'})
             ax_chart.set_title("Heat Map - Time of Day")
             ax_chart.tick_params(axis='x', rotation=45)
+            add_custom_legend(ax_chart, "heatmap", 
+                            "Number of scenes/frames observed",
+                            "Time of day periods")
 
         elif chart == "radar":
             fig.clf()
@@ -127,28 +159,43 @@ Time of Day Distribution:"""
             ax_chart.set_xticks(angles[:-1])
             ax_chart.set_xticklabels(labels, fontsize=11, fontweight='bold')
             ax_chart.set_title("Radar Chart - Time of Day Distribution")
+            add_custom_legend(ax_chart, "radar", 
+                            "Number of scenes/frames observed",
+                            "Time of day periods")
 
         elif chart == "histogram":
             ax_chart.hist(values, bins=5, color='skyblue', edgecolor='black')
             ax_chart.set_title("Histogram - Frequency of Scene Counts")
             ax_chart.set_xlabel("Scene Counts")
             ax_chart.set_ylabel("Frequency")
+            add_custom_legend(ax_chart, "histogram", 
+                            "Number of scenes/frames observed",
+                            "Time of day periods")
 
         elif chart == "stackedbar":
             ax_chart.bar(labels, values, color='steelblue', label='Scenes')
             ax_chart.bar(labels, [v/2 for v in values], color='orange', label='Half Scenes')
             ax_chart.set_title("Stacked Bar Chart - Scenes vs Half")
             ax_chart.legend()
+            add_custom_legend(ax_chart, "stackedbar", 
+                            "Number of scenes/frames observed",
+                            "Time of day periods")
 
         elif chart == "scatter":
             ax_chart.scatter(labels, values, color='purple', s=100)
             ax_chart.set_title("Scatter Plot - Time of Day vs Scene Counts")
             ax_chart.set_ylabel("Number of Scenes")
+            add_custom_legend(ax_chart, "scatter", 
+                            "Number of scenes/frames observed",
+                            "Time of day periods")
 
         elif chart == "density":
             sns.kdeplot(values, fill=True, color='green', ax=ax_chart)
             ax_chart.set_title("Density Plot - Scene Count Distribution")
             ax_chart.set_xlabel("Scene Counts")
+            add_custom_legend(ax_chart, "density", 
+                            "Number of scenes/frames observed",
+                            "Time of day periods")
 
         add_stats(axes[1])
 

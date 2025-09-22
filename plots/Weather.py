@@ -3,6 +3,24 @@ import numpy as np
 import seaborn as sns
 import os
 from math import pi
+
+def add_custom_legend(ax, chart_type, y_axis_motive=None, x_axis_meaning=None):
+    """Add custom legend explaining axis meanings"""
+    legend_text = []
+    
+    # Add y-axis motive only for bar, histogram, and stacked bar charts
+    if chart_type in ['bar', 'histogram', 'stackedbar'] and y_axis_motive:
+        legend_text.append(f"Y-axis: {y_axis_motive}")
+    
+    if x_axis_meaning:
+        legend_text.append(f"X-axis: {x_axis_meaning}")
+    
+    if legend_text:
+        legend_content = "\n".join(legend_text)
+        ax.text(0.02, 0.98, legend_content, transform=ax.transAxes,
+                fontsize=10, verticalalignment='top', 
+                bbox=dict(boxstyle='round,pad=0.3', facecolor='lightyellow', alpha=0.8),
+                zorder=1000)
  
 def plot_weather_distribution(weather_conditions, output_dir="figures/exploratory"):
     os.makedirs(output_dir, exist_ok=True)
@@ -93,7 +111,8 @@ Weather Distribution:"""
             ax_chart.set_title("Bar Chart - Scene Counts")
             ax_chart.set_ylabel("Number of Scenes")
             ax_chart.grid(axis="y", linestyle="--", alpha=0.7)
- 
+            add_custom_legend(ax_chart, "bar", "Number of scenes/frames observed", "Weather conditions in dataset")
+
         elif chart == "pie":
             wedges, texts, autotexts = ax_chart.pie(values, labels=labels,
                                                     autopct="%1.1f%%", startangle=90,
@@ -102,7 +121,8 @@ Weather Distribution:"""
             for autotext in autotexts:
                 autotext.set_color('white')
                 autotext.set_fontweight('bold')
- 
+            add_custom_legend(ax_chart, "pie", None, "Weather conditions distribution")
+
         elif chart == "donut":
             wedges, texts, autotexts = ax_chart.pie(values, labels=labels,
                                                     startangle=90, colors=colors,
@@ -113,7 +133,8 @@ Weather Distribution:"""
             ax_chart.text(0, 0, f'Total\nScenes\n{total_scenes}', ha='center', va='center',
                           fontsize=12, fontweight='bold', color='darkblue')
             ax_chart.set_title("Donut Chart - Scene Counts")
- 
+            add_custom_legend(ax_chart, "donut", None, "Weather conditions with scene counts")
+
         elif chart == "heatmap":
             data = np.array(values).reshape(1, -1)
             sns.heatmap(data, annot=True, fmt="d", cmap="YlOrRd",
@@ -121,7 +142,8 @@ Weather Distribution:"""
                         ax=ax_chart, cbar_kws={'label': 'Number of Scenes'})
             ax_chart.set_title("Heat Map - Weather Intensity")
             ax_chart.tick_params(axis='x', rotation=45)
- 
+            add_custom_legend(ax_chart, "heatmap", None, "Weather conditions intensity")
+
         elif chart == "radar":
             fig.clf()
             fig, axes = plt.subplots(1, 2, figsize=(14, 6))
@@ -135,28 +157,33 @@ Weather Distribution:"""
             ax_chart.set_xticks(angles[:-1])
             ax_chart.set_xticklabels(labels, fontsize=11, fontweight='bold')
             ax_chart.set_title("Radar Chart - Weather Distribution")
- 
+            add_custom_legend(ax_chart, "radar", None, "Weather conditions radar plot")
+
         elif chart == "histogram":
             ax_chart.hist(values, bins=5, color='skyblue', edgecolor='black')
             ax_chart.set_title("Histogram - Frequency of Scene Counts")
             ax_chart.set_xlabel("Scene Counts")
             ax_chart.set_ylabel("Frequency")
- 
+            add_custom_legend(ax_chart, "histogram", "Frequency of occurrences", "Scene count ranges")
+
         elif chart == "stackedbar":
             ax_chart.bar(labels, values, color='steelblue', label='Scenes')
             ax_chart.bar(labels, [v/2 for v in values], color='orange', label='Half Scenes')
             ax_chart.set_title("Stacked Bar Chart - Scene Counts vs Half")
             ax_chart.legend()
- 
+            add_custom_legend(ax_chart, "stackedbar", "Number of scenes", "Weather conditions comparison")
+
         elif chart == "scatter":
             ax_chart.scatter(labels, values, color='purple', s=100)
             ax_chart.set_title("Scatter Plot - Weather vs Scene Counts")
             ax_chart.set_ylabel("Number of Scenes")
- 
+            add_custom_legend(ax_chart, "scatter", None, "Weather conditions vs scene counts")
+
         elif chart == "density":
             sns.kdeplot(values, fill=True, color='green', ax=ax_chart)
             ax_chart.set_title("Density Plot - Scene Count Distribution")
             ax_chart.set_xlabel("Scene Counts")
+            add_custom_legend(ax_chart, "density", None, "Scene count density distribution")
  
         add_stats(axes[1])
  

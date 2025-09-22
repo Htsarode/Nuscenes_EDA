@@ -7,6 +7,26 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+def add_custom_legend(ax, chart_type, y_axis_motive, x_axis_meaning):
+    """
+    Add a custom legend explaining the meaning of x and y axes.
+    Only shows y-axis motive for bar, histogram, and stacked bar charts.
+    
+    Args:
+        ax: The matplotlib axes object
+        chart_type: Type of chart (bar, pie, donut, heatmap, radar, histogram, stackedbar, scatter, density)
+        y_axis_motive: Description of what the y-axis represents
+        x_axis_meaning: Description of what the x-axis represents
+    """
+    legend_text = f"📊 X-Axis: {x_axis_meaning}"
+    
+    # Only show y-axis motive for specific chart types
+    if chart_type in ["bar", "histogram", "stackedbar"]:
+        legend_text += f"\n📈 Y-Axis: {y_axis_motive}"
+    
+    ax.text(0.02, 0.98, legend_text, transform=ax.transAxes, fontsize=9, 
+            verticalalignment='top', bbox=dict(boxstyle='round', facecolor='lightyellow', alpha=0.8))
+
 def plot_pedestrian_road_crossing(crossing_data, output_dir="figures/exploratory"):
     """
     Plot pedestrian road crossing distribution with multiple chart options.
@@ -98,6 +118,7 @@ Distribution:"""
             ax_chart.set_xlabel("Pedestrian Crossing Type", fontsize=12, fontweight="bold")
             ax_chart.set_ylabel("Occurrence Count", fontsize=12, fontweight="bold")
             ax_chart.grid(True, alpha=0.3)
+            add_custom_legend(ax_chart, "bar", "Number of pedestrian crossing instances observed", "Pedestrian crossing types")
 
         elif chart == "pie":
             if total > 0:
@@ -112,6 +133,7 @@ Distribution:"""
                 ax_chart.text(0.5, 0.5, "No Data Available", ha="center", va="center", 
                               fontsize=14, fontweight="bold", transform=ax_chart.transAxes)
             ax_chart.set_title("Pie Chart - Pedestrian Crossing Type Distribution", fontsize=14, fontweight="bold")
+            add_custom_legend(ax_chart, "pie", "Number of pedestrian crossing instances observed", "Pedestrian crossing types")
 
         elif chart == "donut":
             if total > 0:
@@ -130,6 +152,7 @@ Distribution:"""
                 ax_chart.text(0.5, 0.5, "No Data Available", ha="center", va="center", 
                               fontsize=14, fontweight="bold", transform=ax_chart.transAxes)
             ax_chart.set_title("Donut Chart - Pedestrian Crossing Type Distribution", fontsize=14, fontweight="bold")
+            add_custom_legend(ax_chart, "donut", "Number of pedestrian crossing instances observed", "Pedestrian crossing types")
 
         elif chart == "heatmap":
             heatmap_data = np.array(values).reshape(1, -1)
@@ -137,6 +160,7 @@ Distribution:"""
                         xticklabels=labels, yticklabels=["Count"], ax=ax_chart, cbar=True)
             ax_chart.set_title("Heatmap - Pedestrian Crossing Type Distribution", fontsize=14, fontweight="bold")
             ax_chart.set_xlabel("Pedestrian Crossing Type", fontsize=12, fontweight="bold")
+            add_custom_legend(ax_chart, "heatmap", "Number of pedestrian crossing instances observed", "Pedestrian crossing types")
 
         elif chart == "radar":
             if total > 0:
@@ -155,6 +179,7 @@ Distribution:"""
             else:
                 ax_chart.text(0.5, 0.5, "No Data Available", ha="center", va="center", 
                               fontsize=14, fontweight="bold", transform=ax_chart.transAxes)
+            add_custom_legend(ax_chart, "radar", "Number of pedestrian crossing instances observed", "Pedestrian crossing types")
 
         elif chart == "histogram":
             if total > 0:
@@ -170,6 +195,7 @@ Distribution:"""
             ax_chart.set_title("Histogram - Pedestrian Crossing Type Distribution", fontsize=14, fontweight="bold")
             ax_chart.set_xlabel("Pedestrian Crossing Type", fontsize=12, fontweight="bold")
             ax_chart.set_ylabel("Frequency", fontsize=12, fontweight="bold")
+            add_custom_legend(ax_chart, "histogram", "Number of pedestrian crossing instances observed", "Pedestrian crossing types")
 
         elif chart == "stackedbar":
             ax_chart.bar(["Pedestrian Crossing"], [sum(values)], color='lightblue', 
@@ -185,6 +211,7 @@ Distribution:"""
             ax_chart.set_title("Stacked Bar Chart - Pedestrian Crossing Type Distribution", fontsize=14, fontweight="bold")
             ax_chart.set_ylabel("Occurrence Count", fontsize=12, fontweight="bold")
             ax_chart.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+            add_custom_legend(ax_chart, "stackedbar", "Number of pedestrian crossing instances observed", "Pedestrian crossing types")
 
         elif chart == "scatter":
             x_pos = np.arange(len(labels))
@@ -198,6 +225,7 @@ Distribution:"""
             ax_chart.set_xlabel("Pedestrian Crossing Type", fontsize=12, fontweight="bold")
             ax_chart.set_ylabel("Occurrence Count", fontsize=12, fontweight="bold")
             ax_chart.grid(True, alpha=0.3)
+            add_custom_legend(ax_chart, "scatter", "Number of pedestrian crossing instances observed", "Pedestrian crossing types")
 
         elif chart == "density":
             if total > 0:
@@ -220,6 +248,7 @@ Distribution:"""
             ax_chart.set_title("Density Plot - Pedestrian Crossing Type Distribution", fontsize=14, fontweight="bold")
             ax_chart.set_xlabel("Pedestrian Crossing Type", fontsize=12, fontweight="bold")
             ax_chart.set_ylabel("Density", fontsize=12, fontweight="bold")
+            add_custom_legend(ax_chart, "density", "Number of pedestrian crossing instances observed", "Pedestrian crossing types")
 
         # Add statistical summary to the second subplot
         add_stats(axes[1])

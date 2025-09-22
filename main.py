@@ -20,7 +20,9 @@ from src.data_loader import (
     load_ego_vehicle_motion_data,
     load_ego_vehicle_events_data,
     load_vehicle_position_ego_data,
-    load_pedestrian_path_ego_data
+    load_pedestrian_path_ego_data,
+    load_traffic_density_data,
+    load_drivable_area_percentage_data,
 )
 
 from plots.Weather import plot_weather_distribution
@@ -45,7 +47,8 @@ from plots.EgoVehicleMotion import plot_ego_vehicle_motion
 from plots.EgoVehicleEvents import plot_ego_vehicle_events
 from plots.VehiclePositionEgo import plot_vehicle_position_ego
 from plots.PedestrianPathEgo import plot_pedestrian_path_ego
-
+from plots.TrafficDensity import plot_traffic_density_across_frames
+from plots.DrivableAreaPercentage import plot_drivable_area_percentage
 
 def main():
     dataroot = "Data/Raw/nuscenes/v1.0-mini"
@@ -75,6 +78,8 @@ def main():
         "20": ("Ego Vehicle Events Analysis", load_ego_vehicle_events_data, plot_ego_vehicle_events),
         "21": ("Vehicle Position w.r.t. Ego Vehicle Analysis", load_vehicle_position_ego_data, plot_vehicle_position_ego),
         "22": ("Pedestrian Path w.r.t. Ego Vehicle Analysis", load_pedestrian_path_ego_data, plot_pedestrian_path_ego),
+        "23": ("Traffic Density across Frames", load_traffic_density_data, plot_traffic_density_across_frames),
+        "24": ("Drivable Area Percentage Analysis", load_drivable_area_percentage_data, plot_drivable_area_percentage),
     }
 
     print("\n📊 Available Analyses:")
@@ -93,7 +98,6 @@ def main():
         print(f"\n📊 Running {name}...")
         data = loader_func(dataroot, version)
         plot_func(data)
-
 
 if __name__ == "__main__":
     main()

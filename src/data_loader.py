@@ -2155,3 +2155,139 @@ def load_pedestrian_path_ego_data(dataroot: str, version: str = "v1.0-mini"):
         print(f"❌ Error loading pedestrian path data: {e}")
         return {"In Path": 0, "Out of Path": 0}
 
+
+ 
+def load_traffic_density_data(dataroot: str, version: str = "v1.0-mini"):
+    """
+    Load traffic density (Low/Medium/High) for each frame from the nuScenes dataset
+    based on NCAP density bands.
+    """
+    nusc = NuScenes(version=version, dataroot=dataroot, verbose=False)
+ 
+    density_bins = {"Low": 0, "Medium": 0, "High": 0}
+ 
+    for sample in nusc.sample:
+        anns = sample["anns"]
+        vehicle_count = 0
+ 
+        for ann_token in anns:
+            ann = nusc.get("sample_annotation", ann_token)
+            if ann["category_name"].startswith("vehicle."):
+                vehicle_count += 1
+ 
+        if vehicle_count <= 10:
+            density_bins["Low"] += 1
+        elif 11 <= vehicle_count <= 30:
+            density_bins["Medium"] += 1
+        else:
+            density_bins["High"] += 1
+ 
+    return density_bins
+
+def load_drivable_area_percentage_data(dataroot: str, version: str = "v1.0-mini"):
+    """
+    Load drivable area percentage data from nuScenes dataset.
+    Analyzes the available drivable space around ego vehicle based on map information
+    and surrounding objects to categorize into Low/Medium/High percentage bins.
+    
+    Args:
+        dataroot: Path to the nuScenes dataset
+        version: Dataset version (default: v1.0-mini)
+    
+    Returns:
+        dict: Dictionary with counts for Low Percentage, Medium Percentage, High Percentage
+    """
+    from nuscenes.nuscenes import NuScenes
+    import numpy as np
+    
+    nusc = NuScenes(version=version, dataroot=dataroot, verbose=False)
+    
+    # Define expected percentage bins
+    expected_bins = ["Low Percentage", "Medium Percentage", "High Percentage"]
+    percentage_data = {bin_name: 0 for bin_name in expected_bins}
+    
+    # Analyze each sample for drivable area
+    for sample in nusc.sample:
+        try:
+            # Get ego pose for this sample
+            ego_pose_token = sample['data']['LIDAR_TOP']
+            ego_pose_record = nusc.get('ego_pose', ego_pose_token)
+            ego_translation = ego_pose_record['translation']
+            
+            # Get sample annotations (surrounding objects)
+            sample_annotations = [nusc.get('sample_annotation', token) for token in sample['anns']]
+            
+            # Calculate occupied area by nearby objects within analysis radius
+            analysis_radius = 50.0  # meters around ego vehicle
+            occupied_area = 0.0
+            total_analysis_area = np.pi * analysis_radius**2
+            
+            # Count objects that would limit drivable area
+            blocking_objects = 0
+            total_nearby_objects = 0
+            
+            for ann in sample_annotations:
+                obj_translation = ann['translation']
+                
+                # Calculate distance from ego vehicle
+                distance = np.sqrt(
+                    (obj_translation[0] - ego_translation[0])**2 + 
+                    (obj_translation[1] - ego_translation[1])**2
+                )
+                
+                if distance <= analysis_radius:
+                    total_nearby_objects += 1
+                    
+                    # Check if object blocks drivable area
+                    category = ann['category_name']
+                    if (category.startswith('vehicle') or 
+                        category.startswith('human') or
+                        category.startswith('animal') or
+                        'barrier' in category.lower() or
+                        'construction' in category.lower() or
+                        'trafficcone' in category.lower()):
+                        
+                        blocking_objects += 1
+                        
+                        # Estimate object footprint (simplified)
+                        size = ann['size']  # [width, length, height]
+                        object_footprint = size[0] * size[1]  # width * length
+                        occupied_area += object_footprint
+            
+            # Calculate drivable area percentage
+            if total_analysis_area > 0:
+                # Account for road boundaries (assume 60% of circular area is actually road)
+                effective_road_area = total_analysis_area * 0.6
+                available_drivable_area = max(0, effective_road_area - occupied_area)
+                drivable_percentage = (available_drivable_area / effective_road_area) * 100
+                
+                # Alternative method: use object density
+                if total_nearby_objects > 0:
+                    object_density_factor = blocking_objects / max(1, total_nearby_objects)
+                    density_adjusted_percentage = drivable_percentage * (1 - object_density_factor * 0.3)
+                    drivable_percentage = max(0, min(100, density_adjusted_percentage))
+                
+                # Categorize into bins
+                if drivable_percentage < 40:
+                    percentage_data["Low Percentage"] += 1
+                elif drivable_percentage < 75:
+                    percentage_data["Medium Percentage"] += 1
+                else:
+                    percentage_data["High Percentage"] += 1
+            else:
+                # Fallback: categorize based on object count
+                if blocking_objects >= 8:
+                    percentage_data["Low Percentage"] += 1
+                elif blocking_objects >= 3:
+                    percentage_data["Medium Percentage"] += 1
+                else:
+                    percentage_data["High Percentage"] += 1
+                    
+        except Exception as e:
+            # Handle missing data gracefully
+            print(f"Warning: Error processing sample {sample['token']}: {e}")
+            # Default to medium percentage for problematic samples
+            percentage_data["Medium Percentage"] += 1
+            continue
+    
+    return percentage_data

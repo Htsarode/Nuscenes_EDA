@@ -1,4 +1,52 @@
+
+import os
+import json
+import numpy as np
 from nuscenes.nuscenes import NuScenes
+
+def load_speed_bin_data(dataroot: str, version: str = "v1.0-mini"):
+    """
+    Loads speed bin data (Low, Medium, High) from vehicle_monitor.json files in the nuScenes dataset.
+    Uses actual vehicle speed from CAN bus data.
+    Returns a dict with frame counts for each speed bin.
+    """
+    # Speed bins (in km/h)
+    bins = {
+        "Low Speed": 0,
+        "Medium Speed": 0, 
+        "High Speed": 0
+    }
+    
+    # Speed thresholds in km/h
+    low_thresh = 10.8  # 3 m/s = 10.8 km/h
+    high_thresh = 28.8 # 8 m/s = 28.8 km/h
+    
+    can_bus_path = os.path.join(dataroot, version, "can_bus")
+    
+    # Process each scene's vehicle monitor file
+    for file in os.listdir(can_bus_path):
+        if file.endswith("vehicle_monitor.json"):
+            file_path = os.path.join(can_bus_path, file)
+            try:
+                with open(file_path, 'r') as f:
+                    data = json.load(f)
+                    
+                # Process each timestep
+                for frame in data:
+                    # Vehicle speed is in km/h in the CAN bus data
+                    speed = frame['vehicle_speed']
+                    
+                    if speed < low_thresh:
+                        bins["Low Speed"] += 1
+                    elif speed < high_thresh:
+                        bins["Medium Speed"] += 1
+                    else:
+                        bins["High Speed"] += 1
+            except Exception as e:
+                print(f"Error processing {file}: {str(e)}")
+                continue
+                
+    return bins
 
 def load_pedestrian_behaviour_data(dataroot: str, version: str = "v1.0-mini"):
     """
@@ -33,6 +81,60 @@ def load_pedestrian_behaviour_data(dataroot: str, version: str = "v1.0-mini"):
     return behaviour_counts
 
  
+def load_acceleration_bin_data(dataroot: str, version: str = "v1.0-mini"):
+    """
+    Loads acceleration bin data (Low, Medium, High) from vehicle_monitor.json files in the nuScenes dataset.
+    Uses vehicle speed changes from CAN bus data to calculate acceleration.
+    Returns a dict with frame counts for each acceleration bin.
+    """
+    # Acceleration bins (in m/s²)
+    bins = {
+        "Low Acceleration": 0,
+        "Medium Acceleration": 0,
+        "High Acceleration": 0
+    }
+    
+    # Acceleration thresholds in m/s²
+    low_thresh = 1.0   # <1 m/s²
+    high_thresh = 3.0  # >3 m/s²
+    
+    can_bus_path = os.path.join(dataroot, version, "can_bus")
+    
+    # Process each scene's vehicle monitor file
+    for file in os.listdir(can_bus_path):
+        if file.endswith("vehicle_monitor.json"):
+            file_path = os.path.join(can_bus_path, file)
+            try:
+                with open(file_path, 'r') as f:
+                    data = json.load(f)
+                    
+                # Process consecutive timestamps to calculate acceleration
+                for i in range(len(data)-1):
+                    # Get speed at two consecutive timestamps
+                    v1 = data[i]['vehicle_speed'] * (1000/3600)  # Convert km/h to m/s
+                    v2 = data[i+1]['vehicle_speed'] * (1000/3600)
+                    
+                    # Get time difference
+                    t1 = data[i]['utime'] * 1e-6  # Convert microseconds to seconds
+                    t2 = data[i+1]['utime'] * 1e-6
+                    dt = t2 - t1
+                    
+                    if dt > 0:  # Avoid division by zero
+                        # Calculate acceleration (m/s²)
+                        acc = abs((v2 - v1) / dt)  # Using absolute value to consider both acceleration and deceleration
+                        
+                        if acc < low_thresh:
+                            bins["Low Acceleration"] += 1
+                        elif acc < high_thresh:
+                            bins["Medium Acceleration"] += 1
+                        else:
+                            bins["High Acceleration"] += 1
+            except Exception as e:
+                print(f"Error processing {file}: {str(e)}")
+                continue
+                
+    return bins
+
 def load_pedestrian_cyclist_ratio(dataroot: str, version: str = "v1.0-mini"):
     """
     Load pedestrian/cyclist ratio data from the nuScenes dataset.

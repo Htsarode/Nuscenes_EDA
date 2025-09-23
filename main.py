@@ -23,6 +23,8 @@ from src.data_loader import (
     load_pedestrian_path_ego_data,
     load_traffic_density_data,
     load_drivable_area_percentage_data,
+    load_speed_bin_data,
+    load_acceleration_bin_data,
 )
 
 from plots.Weather import plot_weather_distribution
@@ -34,6 +36,8 @@ from plots.TimeOfDay import plot_time_of_day_distribution
 from plots.GeographicalLocations import plot_geographical_locations
 from plots.RareClassOccurrences import plot_rare_class_occurrences
 from plots.VehicleClass import plot_vehicle_class
+from plots.SpeedBin import plot_speed_bin
+from plots.Acceleration import plot_acceleration
 from plots.ObjectBehaviour import plot_object_behaviour
 from plots.PedestrianDensityRoadTypes import plot_pedestrian_density_road_types
 from plots.PedestrianCyclistRatio import plot_pedestrian_cyclist_ratio
@@ -79,7 +83,9 @@ def main():
         "21": ("Vehicle Position w.r.t. Ego Vehicle Analysis", load_vehicle_position_ego_data, plot_vehicle_position_ego),
         "22": ("Pedestrian Path w.r.t. Ego Vehicle Analysis", load_pedestrian_path_ego_data, plot_pedestrian_path_ego),
         "23": ("Traffic Density across Frames", load_traffic_density_data, plot_traffic_density_across_frames),
-        "24": ("Drivable Area Percentage Analysis", load_drivable_area_percentage_data, plot_drivable_area_percentage),
+    "24": ("Drivable Area Percentage Analysis", load_drivable_area_percentage_data, plot_drivable_area_percentage),
+    "25": ("Speed Bin (Low/Medium/High) from can_bus", load_speed_bin_data, plot_speed_bin),
+    "26": ("Acceleration Analysis from can_bus", load_acceleration_bin_data, plot_acceleration),
     }
 
     print("\n📊 Available Analyses:")

@@ -19,7 +19,7 @@ def load_speed_bin_data(dataroot: str, version: str = "v1.0-mini"):
     
     # Speed thresholds in km/h
     low_thresh = 10.8  # 3 m/s = 10.8 km/h
-    high_thresh = 28.8 # 8 m/s = 28.8 km/h
+    high_thresh = 60 # 8 m/s = 28.8 km/h
     
     can_bus_path = os.path.join(dataroot, version, "can_bus")
     
@@ -83,20 +83,28 @@ def load_pedestrian_behaviour_data(dataroot: str, version: str = "v1.0-mini"):
  
 def load_acceleration_bin_data(dataroot: str, version: str = "v1.0-mini"):
     """
-    Loads acceleration bin data (Low, Medium, High) from vehicle_monitor.json files in the nuScenes dataset.
-    Uses vehicle speed changes from CAN bus data to calculate acceleration.
-    Returns a dict with frame counts for each acceleration bin.
+    Loads acceleration bin data and brake/throttle data from vehicle_monitor.json files.
+    
+    Returns:
+        tuple: (acceleration_bins, control_data)
+            - acceleration_bins: dict with counts for Low/Medium/High Acceleration
+            - control_data: dict with brake and throttle statistics
     """
-    # Acceleration bins (in m/s²)
     bins = {
         "Low Acceleration": 0,
         "Medium Acceleration": 0,
         "High Acceleration": 0
     }
     
-    # Acceleration thresholds in m/s²
-    low_thresh = 1.0   # <1 m/s²
-    high_thresh = 3.0  # >3 m/s²
+    control_data = {
+        "No Control": 0,      # Neither brake nor significant throttle
+        "Light Brake": 0,     # Brake level 1-3
+        "Medium Brake": 0,    # Brake level 4-7
+        "Heavy Brake": 0,     # Brake level 8-10
+        "Light Throttle": 0,  # Throttle 1-50
+        "Medium Throttle": 0, # Throttle 51-150
+        "High Throttle": 0    # Throttle 151-200
+    }
     
     can_bus_path = os.path.join(dataroot, version, "can_bus")
     
@@ -108,32 +116,44 @@ def load_acceleration_bin_data(dataroot: str, version: str = "v1.0-mini"):
                 with open(file_path, 'r') as f:
                     data = json.load(f)
                     
-                # Process consecutive timestamps to calculate acceleration
-                for i in range(len(data)-1):
-                    # Get speed at two consecutive timestamps
-                    v1 = data[i]['vehicle_speed'] * (1000/3600)  # Convert km/h to m/s
-                    v2 = data[i+1]['vehicle_speed'] * (1000/3600)
+                # Process each frame
+                for frame in data:
+                    brake = frame['brake']  # Brake level (0-10)
+                    throttle = frame['throttle']  # Throttle level (0-200)
                     
-                    # Get time difference
-                    t1 = data[i]['utime'] * 1e-6  # Convert microseconds to seconds
-                    t2 = data[i+1]['utime'] * 1e-6
-                    dt = t2 - t1
+                    # Determine acceleration state
+                    if brake > 7:  # High braking = high deceleration
+                        bins["High Acceleration"] += 1
+                    elif brake > 3:  # Medium braking = medium deceleration
+                        bins["Medium Acceleration"] += 1
+                    elif throttle > 150:  # High throttle = high acceleration
+                        bins["High Acceleration"] += 1
+                    elif throttle > 50:  # Medium throttle = medium acceleration
+                        bins["Medium Acceleration"] += 1
+                    else:  # Low brake and low throttle = low acceleration
+                        bins["Low Acceleration"] += 1
                     
-                    if dt > 0:  # Avoid division by zero
-                        # Calculate acceleration (m/s²)
-                        acc = abs((v2 - v1) / dt)  # Using absolute value to consider both acceleration and deceleration
+                    # Track brake and throttle usage
+                    if brake > 7:
+                        control_data["Heavy Brake"] += 1
+                    elif brake > 3:
+                        control_data["Medium Brake"] += 1
+                    elif brake > 0:
+                        control_data["Light Brake"] += 1
+                    elif throttle > 150:
+                        control_data["High Throttle"] += 1
+                    elif throttle > 50:
+                        control_data["Medium Throttle"] += 1
+                    elif throttle > 0:
+                        control_data["Light Throttle"] += 1
+                    else:
+                        control_data["No Control"] += 1
                         
-                        if acc < low_thresh:
-                            bins["Low Acceleration"] += 1
-                        elif acc < high_thresh:
-                            bins["Medium Acceleration"] += 1
-                        else:
-                            bins["High Acceleration"] += 1
             except Exception as e:
                 print(f"Error processing {file}: {str(e)}")
                 continue
                 
-    return bins
+    return bins, control_data
 
 def load_pedestrian_cyclist_ratio(dataroot: str, version: str = "v1.0-mini"):
     """

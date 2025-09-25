@@ -1,3 +1,5 @@
+# For plotting
+seaborn
 # nuScenes devkit
 nuscenes-devkit>=1.1.0
 

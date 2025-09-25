@@ -21,8 +21,10 @@ def plot_speed_bin(speed_data, output_dir="figures/exploratory"):
         output_dir: directory to save plots
     """
     os.makedirs(output_dir, exist_ok=True)
-    labels = ["Low Speed", "Medium Speed", "High Speed"]
-    values = [speed_data.get(l, 0) for l in labels]
+    # Define labels with speed ranges
+    labels = ["Low Speed\n(<10.8 km/h)", "Medium Speed\n(10.8-60 km/h)", "High Speed\n(>60 km/h)"]
+    orig_keys = ["Low Speed", "Medium Speed", "High Speed"]
+    values = [speed_data.get(k, 0) for k in orig_keys]
     total = sum(values)
     chart_map = {
         "1": "bar",

@@ -25,9 +25,11 @@ from src.data_loader import (
     load_drivable_area_percentage_data,
     load_speed_bin_data,
     load_acceleration_bin_data,
+    load_pedestrian_distance_data,
 )
 
 from plots.Weather import plot_weather_distribution
+from plots.PedestrianDistance import plot_pedestrian_distance
 from plots.RoadCurvature import plot_road_details_distribution
 from plots.RoadType import plot_road_type_distribution
 from plots.RoadObstacles import plot_road_obstacles_distribution
@@ -86,8 +88,9 @@ def main():
     "24": ("Drivable Area Percentage Analysis", load_drivable_area_percentage_data, plot_drivable_area_percentage),
     "25": ("Speed Bin (Low/Medium/High) from can_bus", load_speed_bin_data, plot_speed_bin),
     "26": ("Acceleration Analysis from can_bus", load_acceleration_bin_data, plot_acceleration),
+    "27": ("Pedestrian Distance Analysis", load_pedestrian_distance_data, plot_pedestrian_distance),
     }
-
+    
     print("\n📊 Available Analyses:")
     for num, (name, _, _) in analysis_map.items():
         print(f"{num}. {name}")

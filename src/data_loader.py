@@ -3,6 +3,59 @@ import os
 import json
 import numpy as np
 from nuscenes.nuscenes import NuScenes
+from pyquaternion import Quaternion
+
+def calculate_distance(pos1, pos2):
+    """Calculate Euclidean distance between two 3D points"""
+    return np.sqrt(sum((pos1[i] - pos2[i])**2 for i in range(3)))
+
+def load_pedestrian_distance_data(dataroot: str, version: str = "v1.0-mini"):
+    """
+    Load and analyze pedestrian distances from ego vehicle using the nuScenes dataset.
+    
+    Args:
+        dataroot: Path to the nuScenes dataset
+        version: Version of the dataset (default: v1.0-mini)
+        
+    Returns:
+        Dictionary containing counts of pedestrians in different distance categories
+        (Far: >20m, Medium: 10-20m, Near: <10m)
+    """
+    # Initialize NuScenes
+    nusc = NuScenes(version=version, dataroot=dataroot, verbose=True)
+    
+    distances = {
+        "Far": 0,     # > 20m
+        "Medium": 0,  # 10-20m
+        "Near": 0     # < 10m
+    }
+    
+    for scene in nusc.scene:
+        sample_token = scene['first_sample_token']
+        
+        while sample_token:
+            sample = nusc.get('sample', sample_token)
+            ego_pose = nusc.get('ego_pose', nusc.get('sample_data', sample['data']['LIDAR_TOP'])['ego_pose_token'])
+            ego_position = np.array(ego_pose['translation'])
+            
+            # Get annotations for this sample
+            anns = sample['anns']
+            for ann_token in anns:
+                ann = nusc.get('sample_annotation', ann_token)
+                if ann['category_name'].startswith('human.pedestrian'):
+                    ped_position = np.array(ann['translation'])
+                    distance = calculate_distance(ego_position, ped_position)
+                    
+                    if distance > 20:
+                        distances["Far"] += 1
+                    elif distance > 10:
+                        distances["Medium"] += 1
+                    else:
+                        distances["Near"] += 1
+                        
+            sample_token = sample['next']
+    
+    return distances
 
 def load_speed_bin_data(dataroot: str, version: str = "v1.0-mini"):
     """
